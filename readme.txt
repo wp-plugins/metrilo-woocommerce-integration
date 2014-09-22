@@ -1,17 +1,19 @@
-=== Metrilo for WooCommerce ===
+=== WooCommerce Analytics by Metrilo ===
 Contributors: MurryIvanoff
-Tags: analytics, reporting, tracking
-Requires at least: 3.5.2
+Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics
+Requires at least: 2.9.2
 Tested up to: 4.0
 Stable tag: 0.69
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-One-click integration with Metrilo's tracking API
+Analytics for WooCommerce. One-click integration for eCommerce stores. 
 
 == Description ==
 
-Metrilo is simple, yet extremely powerful Analytics tool. This plugin provides one-click integration with Metrilo's Analytics tracking API for WordPress online stores running on WooCommerce. 
+Metrilo is simple, yet extremely powerful Analytics tool. This plugin provides one-click integration with Metrilo's Analytics tracking API for WordPress online stores running on WooCommerce. Funnels, metrics, individual visitors and customers tracking. Measure marketing channels efficiency, products and categories performance and many more. Free 30 day trial! Ask-us-anything support included with every free trial plan.
+
+Don't have Metrilo account yet? That's alright! [Sign up now](https://www.metrilo.com/signup?ref=wpplugin) and get 30-day free trial!
 
 
 == Installation ==
@@ -20,7 +22,8 @@ Once you install the plugin, follow these steps:
 
 1. Activate the plugin.
 2. Go to plugin's Settings page
-3. Enter your unique Metrilo API token and click "Save settings"
+3. Enter your unique Metrilo API token and click "Save settings". If you don't have API token, [sign up for free](https://www.metrilo.com/signup?ref=wpplugin) and get one now!
+4. That's it.
 
 == Frequently Asked Questions ==
 
@@ -39,7 +42,7 @@ Off course! Sign-up for Metrilo now - your first month is on us!
 
 == Screenshots ==
 
-
+1. Simple funnels. Compare by any parameter, including marketing campaign, referral, device and etc.
 
 == Changelog ==
 
