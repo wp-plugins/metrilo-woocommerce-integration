@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics
 Requires at least: 2.9.2
 Tested up to: 4.0
-Stable tag: 0.69
+Stable tag: 0.71
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,10 @@ Off course! Sign-up for Metrilo now - your first month is on us!
 
 == Changelog ==
 
+
+
+= 0.71 =
+* Metrilo now works as WooCommerce integration. Improved session management using WooCommerce's Session Handler.
 
 = 0.69 =
 * Bug fixes and optimizations
