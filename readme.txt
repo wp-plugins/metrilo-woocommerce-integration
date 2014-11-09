@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items
 Requires at least: 2.9.2
 Tested up to: 4.0
-Stable Tag: 0.79
+Stable Tag: 0.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,7 +53,7 @@ Off course! [Sign-up](https://www.metrilo.com/signup?ref=wpplugin) for Metrilo n
 == Changelog ==
 
 
-= 0.79 =
+= 0.8 =
 * Backwards compitability with 2.0x versions. Stability improvements. 
 
 = 0.71 =
