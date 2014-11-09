@@ -10,6 +10,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	private $single_item_tracked = false;
 	private $has_events_in_cookie = false;
 	private $identify_call_data = false;
+	private $woo = false;
 
  
 	/**
@@ -22,6 +23,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 	public function __construct() {
 		global $woocommerce, $metrilo_woo_analytics_integration;
+
+		$this->woo = function_exists('WC') ? WC() : $woocommerce;
 
 		$this->id = 'metrilo-woo-analytics';
 		$this->method_title = __( 'Metrilo', 'metrilo-woo-analytics' );
@@ -122,6 +125,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			// if visitor is anywhere in the checkout process
 			if(!$this->single_item_tracked && is_order_received_page()){
 				$order_id = get_query_var('order-received');
+				if(empty($order_id)) $order_id = $_GET['order'];
+				if(empty($order_id)) return true;
 				$order = new WC_Order($order_id);
 				// also - prepare to identify user
 				$this->identify_call_data = array(
@@ -137,7 +142,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				$purchase_params = array(
 					'order_id' 			=> $order_id, 
 					'amount' 			=> $order->get_total(), 
-					'shipping_amount' 	=> $order->get_total_shipping(),
+					'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 					'tax_amount'		=> $order->get_total_tax(),
 					'items' 			=> array(),
 					'shipping_method'	=> $order->get_shipping_method(), 
@@ -155,7 +160,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				$this->put_event_in_queue('track', 'order', $purchase_params);
 				$this->put_event_in_queue('purchase', '', array('order_id' => $order_id, 'amount' => $order->get_total()));
 				$this->single_item_tracked = true;
-			}elseif(!$this->single_item_tracked && is_checkout_pay_page()){
+			}elseif(!$this->single_item_tracked && function_exists('is_checkout_pay_page') && is_checkout_pay_page()){
 				$this->put_event_in_queue('track', 'checkout_payment', array());
 				$this->single_item_tracked = true;
 			}elseif(!$this->single_item_tracked && is_checkout()){
@@ -197,7 +202,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			'id'			=> $product->id, 
 			'name'			=> $product->get_title(),
 			'price'			=> $product->get_price(),
-			'url'			=> $product->get_permalink()
+			'url'			=> get_permalink($product->id)
 		);
 		if($variation_id){
 			$variation_data = $this->prepare_variation_data($variation_id, $variation);
@@ -251,10 +256,10 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 	public function remove_from_cart($key_id){
-		if (!is_object(WC()->cart)) {
+		if (!is_object($this->woo->cart)) {
 			return true;
 		}		
-		$cart_items = WC()->cart->get_cart();
+		$cart_items = $this->woo->cart->get_cart();
 		$removed_cart_item = isset($cart_items[$key_id]) ? $cart_items[$key_id] : false;
 		if($removed_cart_item){
 			$event_params = array('id' => $removed_cart_item['product_id']);
@@ -322,18 +327,18 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	 */
 
 	public function session_get($k){
-		if(!is_object(WC()->session)){
+		if(!is_object($this->woo->session)){
 			return isset($_COOKIE[$k]) ? $_COOKIE[$k] : false;
 		}
-		return WC()->session->get($k);
+		return $this->woo->session->get($k);
 	}
 
 	public function session_set($k, $v){
-		if(!is_object(WC()->session)){
+		if(!is_object($this->woo->session)){
 			@setcookie($k, $v, time() + 43200, COOKIEPATH, COOKIE_DOMAIN);
 			$_COOKIE[$k] = $v;
 		}
-		return WC()->session->set($k, $v);
+		return $this->woo->session->set($k, $v);
 	}
 
 	public function add_item_to_cookie($data){
