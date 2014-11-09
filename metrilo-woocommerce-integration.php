@@ -3,7 +3,7 @@
  * Plugin Name: Metrilo for WooCommerce
  * Plugin URI: https://www.metrilo.com/woocommerce-integration
  * Description: One-click WooCommerce integration with Metrilo
- * Version: 0.8
+ * Version: 0.81
  * Author: Metrilo
  * Author URI: https://www.metrilo.com/
  * License: GPLv2 or later
