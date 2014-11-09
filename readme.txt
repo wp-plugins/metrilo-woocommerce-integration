@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items
 Requires at least: 2.9.2
 Tested up to: 4.0
-Stable tag: 0.79
+Stable Tag: 0.79
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
