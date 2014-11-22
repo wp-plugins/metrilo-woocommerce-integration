@@ -45,15 +45,18 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// ensure correct plugin path
 		$this->ensure_path();
 
-		add_action('woocommerce_init', function(){
-			$this->ensure_hooks();
-			$this->process_cookie_events();
-			$this->ensure_identify();
-		});
+		// initiate woocommerce hooks and activities
+		add_action('woocommerce_init', array($this, 'on_woocommerce_init'));
  
 		// hook to integration settings update
-		add_action( 'woocommerce_update_options_integration_' .  $this->id, array( $this, 'process_admin_options' ) );
+		add_action( 'woocommerce_update_options_integration_' .  $this->id, array($this, 'process_admin_options'));
  
+	}
+
+	public function on_woocommerce_init(){
+		$this->ensure_hooks();
+		$this->process_cookie_events();
+		$this->ensure_identify();
 	}
 
 	public function ensure_hooks(){
