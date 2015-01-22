@@ -45,12 +45,23 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// ensure correct plugin path
 		$this->ensure_path();
 
+		// ensure session identification of visitor
+		$this->ensure_uid();
+
 		// initiate woocommerce hooks and activities
 		add_action('woocommerce_init', array($this, 'on_woocommerce_init'));
  
 		// hook to integration settings update
 		add_action( 'woocommerce_update_options_integration_' .  $this->id, array($this, 'process_admin_options'));
  
+	}
+
+	public function ensure_uid(){
+		$this->cbuid = $this->session_get('ensure_cbuid');
+		if(!$this->cbuid){
+			$this->cbuid = md5(uniqid(rand(), true)) . rand();
+			$this->session_set('ensure_cbuid', $this->cbuid);
+		}
 	}
 
 	public function on_woocommerce_init(){
@@ -296,6 +307,11 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			'shipping_method'	=> $order->get_shipping_method(), 
 			'payment_method'	=> $order->payment_method_title
 		);
+
+		$coupons_applied = $order->get_used_coupons();
+		if(count($coupons_applied) > 0){
+			$purchase_params['coupons'] = $coupons_applied;
+		}
 
 		// add the items data to the order
 		$order_items = $order->get_items();
