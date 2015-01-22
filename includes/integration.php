@@ -45,9 +45,6 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// ensure correct plugin path
 		$this->ensure_path();
 
-		// ensure session identification of visitor
-		$this->ensure_uid();
-
 		// initiate woocommerce hooks and activities
 		add_action('woocommerce_init', array($this, 'on_woocommerce_init'));
  
@@ -65,9 +62,19 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 	public function on_woocommerce_init(){
+
+		// hook to WooCommerce models
 		$this->ensure_hooks();
+
+		// process cookie events
 		$this->process_cookie_events();
+
+		// ensure identification
 		$this->ensure_identify();
+
+		// ensure session identification of visitor
+		$this->ensure_uid();
+
 	}
 
 	public function ensure_hooks(){
@@ -374,6 +381,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		if(!is_object($this->woo->session)){
 			@setcookie($k, $v, time() + 43200, COOKIEPATH, COOKIE_DOMAIN);
 			$_COOKIE[$k] = $v;
+			return true;
 		}
 		return $this->woo->session->set($k, $v);
 	}
