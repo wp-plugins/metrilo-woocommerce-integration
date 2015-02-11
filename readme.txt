@@ -1,9 +1,9 @@
 === WooCommerce Analytics & CRM by Metrilo ===
 Contributors: MurryIvanoff
-Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management
+Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn
 Requires at least: 2.9.2
 Tested up to: 4.1
-Stable Tag: 0.92
+Stable Tag: 0.96
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,6 +53,10 @@ Absolutely! We offer a forever-free plan and we also provide 30-day free trial o
 3. Products performance - see top performing products and how are they connected to other products in your catalog
 
 == Changelog ==
+
+= 0.96 =
+* New: Metrilo now tracks WooCommerce Subscriptions orders automatically to help you measure your retention and churn
+* Many small Bug fixes. Thank you for reporting, Paolo and and Luciano!
 
 = 0.92 =
 * Bug fix with WooCommerce session integration

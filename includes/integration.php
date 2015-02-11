@@ -28,7 +28,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		$this->id = 'metrilo-woo-analytics';
 		$this->method_title = __( 'Metrilo', 'metrilo-woo-analytics' );
-		$this->method_description = __( 'Metrilo offers powerful yet simple Analytics for WooCommerce Stores. Enter your API key to activate analytics tracking.', 'metrilo-woo-analytics' );
+		$this->method_description = __( 'Metrilo offers powerful yet simple CRM & Analytics for WooCommerce and WooCommerce Subscription Stores. Enter your API key to activate analytics tracking.', 'metrilo-woo-analytics' );
  
 
 		// Load the settings.
@@ -37,9 +37,14 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
  
 		// Fetch the integration settings
 		$this->api_key = $this->get_option('api_key', false);
+		$this->api_secret = $this->get_option('api_secret', false);
+
 		// previous version compatibility - fetch token from Wordpress settings
 		if(empty($this->api_key)){
 			$this->api_key = $this->get_previous_version_settings_key();
+		}
+		if(empty($this->api_secret)){
+			$this->api_secret = false;
 		}
 
 		// ensure correct plugin path
@@ -63,6 +68,9 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 	public function on_woocommerce_init(){
 
+		// check if API token and Secret are both entered
+		$this->check_for_keys();
+
 		// hook to WooCommerce models
 		$this->ensure_hooks();
 
@@ -77,6 +85,20 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 	}
 
+	public function check_for_keys(){
+		if(is_admin()){
+			if((empty($this->api_key) || empty($this->api_secret)) && empty($_POST['save'])){
+				add_action('admin_notices', array($this, 'admin_keys_notice'));
+			}
+		}
+	}
+
+	public function admin_keys_notice(){
+		if(empty($this->api_key)) $message = 'Almost done! Just enter your Metrilo API key to get started';
+		if(empty($this->api_secret)) $message = 'Almost done! Just enter your Metrilo API key and secret';
+		echo '<div class="updated"><p>'.$message.' <a href="'.admin_url('admin.php?page=wc-settings&tab=integration').'">here</a></p></div>';
+	}
+
 	public function ensure_hooks(){
 
 		// general tracking snipper hook
@@ -88,7 +110,11 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		add_action('woocommerce_before_cart_item_quantity_zero', array($this, 'remove_from_cart'), 10);
 		add_filter('woocommerce_applied_coupon', array($this, 'applied_coupon'), 10);
 
+		// hook on new order placed
 		add_action('woocommerce_checkout_order_processed', array($this, 'new_order_event'), 10);
+
+		// hook on WooCommerce subscriptions renewal
+		add_action('woocommerce_subscriptions_renewal_order_created', array($this, 'new_subscription_order_event'), 10, 4);
 
 		// cookie clearing actions
 		add_action('wp_ajax_metrilo_clear', array($this, 'clear_cookie_events'));
@@ -242,6 +268,47 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		return array('method' => $method, 'event' => $event, 'params' => $params);
 	}
 
+	public function send_api_call($ident, $event, $params, $identity_data = false){
+
+		if(!empty($this->api_key) && !empty($this->api_secret)){
+			$this->prepare_secret_call_hash($ident, $event, $params, $identity_data);
+		}
+
+	}
+
+	private function prepare_secret_call_hash($ident, $event, $params, $identity_data = false){
+
+		// prepare API call params
+
+		try {
+
+			$call = array(
+				'event_type'		=> $event, 
+				'params'			=> $params, 
+				'uid'				=> $ident, 
+				'token'				=> $this->api_key
+			);
+
+			// put identity data in call if available
+			if($identity_data){
+				$call['identity'] = $identity_data;
+			}
+
+			// sort for salting and prepare base64
+			ksort($call);
+			$based_call = base64_encode(json_encode($call));
+			$signature = md5($based_call.$this->api_secret);
+
+			// generate API call end point and call it
+			$end_point = 'http://api.metrilo.com/track?s='.$signature.'&hs='.$based_call;
+			wp_remote_get($end_point);
+
+		} catch (Exception $e){
+
+		}
+
+	}
+
 	public function add_to_cart($cart_item_key, $product_id, $quantity, $variation_id = false, $variation = false, $cart_item_data = false){
 		$product = get_product($product_id);
 		$this->put_event_in_cookie_queue('track', 'add_to_cart', $this->prepare_product_hash($product, $variation_id, $variation));
@@ -334,8 +401,46 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		// put the order and identify data in cookies
 		$this->put_event_in_cookie_queue('track', 'order', $purchase_params);
-		$this->put_event_in_cookie_queue('purchase', '', array('order_id' => $order_id, 'amount' => $order->get_total()));
 		$this->session_set($this->get_do_identify_cookie_name(), json_encode($this->identify_call_data, true));
+
+	}
+
+	public function new_subscription_order_event($order, $original_order, $product_id, $new_order_role){
+
+		try {
+
+			$purchase_params = array(
+				'order_id' 			=> $order->id, 
+				'order_type'		=> 'renewal',
+				'amount' 			=> $order->get_total(), 
+				'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
+				'tax_amount'		=> $order->get_total_tax(),
+				'items' 			=> array(),
+				'shipping_method'	=> $order->get_shipping_method(), 
+				'payment_method'	=> $order->payment_method_title
+			);
+
+			$identity_data = array(
+						'email' 		=> get_post_meta($order->id, '_billing_email', true),
+						'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
+						'last_name' 	=> get_post_meta($order->id, '_billing_last_name', true),
+						'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
+			);
+
+
+			$product = get_product($product_id);
+
+			// prepare product data
+			$product_data = $this->prepare_product_hash($product);
+			$product_data['quantity'] = 1;
+
+			$purchase_params['items'] = array($product_data);
+
+			$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data);
+
+		}catch (Exception $e){
+
+		}
 
 	}
 
@@ -467,9 +572,16 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	public function init_form_fields() {
 		$this->form_fields = array(
 			'api_key' => array(
-				'title'             => __( 'API Key', 'metrilo-woo-analytics' ),
+				'title'             => __( 'API Token', 'metrilo-woo-analytics' ),
 				'type'              => 'text',
-				'description'       => __( 'Enter your Metrilo API key. You can find it under "Settings" in your Metrilo account.<br /> Don\'t have one? <a href="https://www.metrilo.com/signup?ref=woointegration" target="_blank">Sign-up for free</a> now, it only takes a few seconds.', 'metrilo-woo-analytics' ),
+				'description'       => __( 'Enter your Metrilo API token. You can find it under "Settings" in your Metrilo account.<br /> Don\'t have one? <a href="https://www.metrilo.com/signup?ref=woointegration" target="_blank">Sign-up for free</a> now, it only takes a few seconds.', 'metrilo-woo-analytics' ),
+				'desc_tip'          => false,
+				'default'           => ''
+			),
+			'api_secret' => array(
+				'title'             => __( 'API Secret Key <span style="color: green;">(new)</span>', 'metrilo-woo-analytics' ),
+				'type'              => 'text',
+				'description'       => __( '<strong style="color: green;">NEW in v0.96:</strong> Enter your Metrilo API secret key to activate Subscriptions tracking and improve general tracking reliability.', 'metrilo-woo-analytics' ),
 				'desc_tip'          => false,
 				'default'           => ''
 			)
