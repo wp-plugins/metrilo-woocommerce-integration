@@ -1,7 +1,13 @@
 <div class="welcome-panel">
-	<h3>Importing your Orders and Customers to Metrilo</h3>
-	<p>This tool syncs all your orders and customers to Metrilo and can take up to a few minutes. Please make sure you don't close this page while importing.</p>
-
+	<div style="float: left; width: 120px; text-align: center;">
+		<img src="https://www.metrilo.com/assets/invoice_logo.png" />
+	</div>
+	<div style="float: left;">
+	<h3>Importing your orders and customers to Metrilo (beta)</h3>
+	<p>
+		This tool syncs all your orders and customers to Metrilo and can take <strong>up to a few minutes</strong> to complete. <br />
+	  	Make sure you do not close this page while importing. Coffee, maybe?
+	</p>
 	<?php if($this->importing): ?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($){
@@ -25,7 +31,7 @@
 							sync_chunk(new_chunk_id);
 						}, 2000);
 					}else{
-						update_importing_message("<span style='color: green;'>Done! Please wait up to 30 minutes for your historical data to appear in Metrilo.</span>");
+						update_importing_message("<span style='color: green;'>Done! Please expect up to 30 minutes for your historical data to appear in Metrilo.</span>");
 					}
 
 				});
@@ -38,17 +44,16 @@
 
 			sync_chunk(0);
 
-
-		    console.log(metrilo_chunks);
 		});
 		</script>
 		<strong id="metrilo_import_status">Importing...</strong>
 	<?php else: ?>
 		<a href="<?php echo admin_url('tools.php?page=metrilo-import&import=1') ?>" class="button"><strong>Sync <?php echo $this->orders_total; ?> orders now</strong></a>
 	<?php endif; ?>
-
-<br /><br />
+	</div>
+<br style="clear: both;" />
+<br />
 </div>
 <div style="color: #888; font-size: 11px; padding: 5px;">
-	Please note that this importing tool is still in beta. If you encounter any issues, please let us know at <a href="mailto:support@metrilo.com">support@metrilo.com</a>
+	Please note that this importing tool is still in beta. If you encounter any issues, let us know at <a href="mailto:support@metrilo.com">support@metrilo.com</a>. We'll get it fixed. 
 </div>

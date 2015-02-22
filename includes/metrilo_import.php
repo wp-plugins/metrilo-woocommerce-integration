@@ -14,22 +14,14 @@ class Metrilo_Import {
 
 	public function prepare_import(){
 
+		global $wpdb;
+
 		// prepare to fetch all orders
-		$args = array(
-                    'post_type' 		=> 'shop_order',
-                    'post_status' 		=> 'publish',
-                    'posts_per_page' 	=> -1, 
-                    'order'				=> 'ASC'
-                );
-		$loop = new WP_Query( $args );
 
-		// fetsh all order IDs and push to array
-
-		while ( $loop->have_posts() ) : 
-			$loop->the_post();
-            $order_id = $loop->post->ID;
-            array_push($this->orders_list, $order_id);
-        endwhile;
+		$total = $wpdb->get_results("select id from {$wpdb->posts} where post_type = 'shop_order' order by id asc", ARRAY_A);
+		foreach($total as $order_object){
+			array_push($this->orders_list, $order_object['id']);
+		}
 
         // prepare meta data for import
         $this->orders_total = count($this->orders_list);
