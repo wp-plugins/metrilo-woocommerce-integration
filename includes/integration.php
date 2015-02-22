@@ -119,7 +119,78 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// cookie clearing actions
 		add_action('wp_ajax_metrilo_clear', array($this, 'clear_cookie_events'));
 		add_action('wp_ajax_nopriv_metrilo_clear', array($this, 'clear_cookie_events'));
+		add_action('wp_ajax_metrilo_chunk_sync', array($this, 'sync_orders_chunk'));
 
+		add_action('admin_menu', array($this, 'setup_admin_pages'));
+
+	}
+
+	public function setup_admin_pages(){
+		add_submenu_page('tools.php', 'Export to Metrilo', 'Export to Metrilo', 'export', 'metrilo-import', array($this, 'metrilo_import_page'));
+	}
+
+	public function metrilo_import_page(){
+		wp_enqueue_script('jquery');
+		$metrilo_import = include_once('metrilo_import.php');
+		$metrilo_import->prepare_import();
+		if(!empty($_GET['import'])){
+			$metrilo_import->set_importing_mode(true);
+			$metrilo_import->prepare_order_chunks();
+		}
+		$metrilo_import->output();
+	}
+
+	public function sync_orders_chunk(){
+		$order_ids = $_REQUEST['orders'];
+		if(!empty($order_ids)){
+			foreach($order_ids as $order_id){
+				$order = new WC_Order($order_id);
+				if(!empty($order) && !empty($order->id)){
+
+					// prepare the order data
+					$purchase_params = array(
+						'order_id' 			=> $order_id, 
+						'amount' 			=> $order->get_total(), 
+						'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
+						'tax_amount'		=> $order->get_total_tax(),
+						'items' 			=> array(),
+						'shipping_method'	=> $order->get_shipping_method(), 
+						'payment_method'	=> $order->payment_method_title
+					);
+
+					$order_time_in_ms = get_the_date('U', $order_id) * 1000;
+
+					$coupons_applied = $order->get_used_coupons();
+					if(count($coupons_applied) > 0){
+						$purchase_params['coupons'] = $coupons_applied;
+					}
+
+					// add the items data to the order
+					$order_items = $order->get_items();
+					foreach($order_items as $product){
+						$product_hash = array('id' => $product['product_id'], 'quantity' => $product['qty'], 'name' => $product['name']);
+						if(!empty($product['variation_id'])){
+							$variation_data = $this->prepare_variation_data($product['variation_id']);
+							$product_hash['option_id'] = $variation_data['id'];
+							$product_hash['option_price'] = $variation_data['price'];
+						}
+						array_push($purchase_params['items'], $product_hash);
+					}					
+					
+					$identity_data = array(
+								'email' 		=> get_post_meta($order->id, '_billing_email', true),
+								'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
+								'last_name' 	=> get_post_meta($order->id, '_billing_last_name', true),
+								'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
+					);
+
+					$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms);
+
+				}
+			}
+		}
+
+		return true;
 	}
 
 	public function ensure_path(){
@@ -268,15 +339,15 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		return array('method' => $method, 'event' => $event, 'params' => $params);
 	}
 
-	public function send_api_call($ident, $event, $params, $identity_data = false){
+	public function send_api_call($ident, $event, $params, $identity_data = false, $time = false){
 
 		if(!empty($this->api_key) && !empty($this->api_secret)){
-			$this->prepare_secret_call_hash($ident, $event, $params, $identity_data);
+			$this->prepare_secret_call_hash($ident, $event, $params, $identity_data, $time);
 		}
 
 	}
 
-	private function prepare_secret_call_hash($ident, $event, $params, $identity_data = false){
+	private function prepare_secret_call_hash($ident, $event, $params, $identity_data = false, $time = false){
 
 		// prepare API call params
 
@@ -288,6 +359,11 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				'uid'				=> $ident, 
 				'token'				=> $this->api_key
 			);
+			if($time){
+				$call['time'] = $time;
+			}
+
+
 
 			// put identity data in call if available
 			if($identity_data){
@@ -300,8 +376,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			$signature = md5($based_call.$this->api_secret);
 
 			// generate API call end point and call it
-			$end_point = 'http://api.metrilo.com/track?s='.$signature.'&hs='.$based_call;
-			wp_remote_get($end_point);
+			$end_point = 'http://p.metrilo.com/t?s='.$signature.'&hs='.$based_call;
+			$c = wp_remote_get($end_point);
 
 		} catch (Exception $e){
 
@@ -514,8 +590,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 	public function clear_items_in_cookie(){
-		$this->session_set($this->get_cookie_name(), json_decode(array(), true));
-		$this->session_set($this->get_do_identify_cookie_name(), json_decode(array(), true));
+		$this->session_set($this->get_cookie_name(), json_encode(array(), true));
+		$this->session_set($this->get_do_identify_cookie_name(), json_encode(array(), true));
 	}
 
 	private function get_cookie_name(){

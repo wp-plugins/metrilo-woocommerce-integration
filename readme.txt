@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn
 Requires at least: 2.9.2
 Tested up to: 4.1
-Stable Tag: 0.96
+Stable Tag: 0.98
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -53,6 +53,10 @@ Absolutely! We offer a forever-free plan and we also provide 30-day free trial o
 3. Products performance - see top performing products and how are they connected to other products in your catalog
 
 == Changelog ==
+
+= 0.98 =
+* New: You can now import your historical orders and customers to Metrilo. Please note that this feature is still in beta.
+* A few small bug fixes.
 
 = 0.96 =
 * New: Metrilo now tracks WooCommerce Subscriptions orders automatically to help you measure your retention and churn
