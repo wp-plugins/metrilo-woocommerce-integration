@@ -90,6 +90,9 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			if((empty($this->api_key) || empty($this->api_secret)) && empty($_POST['save'])){
 				add_action('admin_notices', array($this, 'admin_keys_notice'));
 			}
+			if(!empty($_POST['save']) && !empty($this->api_key) && !empty($_POST['woocommerce_metrilo-woo-analytics_api_key'])){
+				add_action('admin_notices', array($this, 'admin_import_invite'));
+			}
 		}
 	}
 
@@ -97,6 +100,10 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		if(empty($this->api_key)) $message = 'Almost done! Just enter your Metrilo API key to get started';
 		if(empty($this->api_secret)) $message = 'Almost done! Just enter your Metrilo API key and secret';
 		echo '<div class="updated"><p>'.$message.' <a href="'.admin_url('admin.php?page=wc-settings&tab=integration').'">here</a></p></div>';
+	}
+
+	public function admin_import_invite(){
+		echo '<div class="updated"><p>Awesome! Have you tried <a href="'.admin_url('tools.php?page=metrilo-import').'"><strong>importing your existing customers to Metrilo</strong></a>?</p></div>';
 	}
 
 	public function ensure_hooks(){
@@ -657,7 +664,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			'api_secret' => array(
 				'title'             => __( 'API Secret Key <span style="color: green;">(new)</span>', 'metrilo-woo-analytics' ),
 				'type'              => 'text',
-				'description'       => __( '<strong style="color: green;">NEW in v0.96:</strong> Enter your Metrilo API secret key to activate Subscriptions tracking and improve general tracking reliability.', 'metrilo-woo-analytics' ),
+				'description'       => __( '<strong style="color: green;">Important:</strong> Enter your Metrilo API secret key to activate Subscriptions tracking and to be able to sync with Metrilo', 'metrilo-woo-analytics' ),
 				'desc_tip'          => false,
 				'default'           => ''
 			)

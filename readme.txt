@@ -1,23 +1,34 @@
-=== WooCommerce Analytics & CRM by Metrilo ===
+=== WooCommerce Intelligent Marketing & CRM by Metrilo ===
 Contributors: MurryIvanoff
-Tags: analytics, reporting, tracking, woocommerce, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn
+Tags: woocommerce, analytics, reporting, tracking, woo, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn, customer analytics, insights, ltv, email marketing, email, triggered emails, cohorts, sales analytics, customer intelligence, email marketing
 Requires at least: 2.9.2
 Tested up to: 4.1
-Stable Tag: 0.99
+Stable Tag: 1.0.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Analytics and CRM for WooCommerce. One-click integration for eCommerce stores. It only takes a few seconds to setup and it's free. 
+Get to know your customers. Send highly targeted email campaigns. Measure your WooCommerce website. CRM for WooCommerce.
 
 == Description ==
 
-Metrilo is simple, yet extremely powerful Analytics & CRM product that turns your eCommerce data into insights to grow your business. It's the easiest and fastest way to get to know your business and customers. Enjoy the power of Big Data with amazing siplicity. 
+Metrilo is simple, yet extremely powerful Customer Analytics, CRM and Email Marketing product that turns your WooCommerce data into insights to grow your business. Metrilo helps you know everything about your customers from their first touch with your WooCommerce store to their latest purchase
 
-This plugin provides one-click integration with Metrilo's Analytics & CRM tracking API for WordPress online stores running on WooCommerce. Funnels, metrics, individual visitors and customers tracking. Measure marketing channels efficiency, products and categories performance and many more. Forever-free plan and 30 day trial available on bigger plans. Ask-Us-Anything support included with every free or paid plan. We're truly customer centric and it's our mission to turn Metrilo into your best friend to run your eCommerce business with.
+* Have all your customer data in one place.
+* Identify cohorts of customers, cart abandoners or high-value spenders. Metrilo gets all your customer data in one place and makes it easy for you to get to know your biggest asset - your customers.
+* More repeat purchases, just a few clicks away. Send targeted email messages in 3 easy steps.
+* Metrilo tracks all important eCommerce metrics for you. Automatically.
+* Optimize your acquisition channels
+* Track product performance
+* Most powerful WooCommerce CRM on the market
+* Powerful intelligence for your sales team
+* With Metrilo, you have an amazing real-time overview of who's doing what on your eCommerce store.
+* Metrilo automatically collects and analyzes your eCommerce data to use for your email campaigns.
 
-Don't have Metrilo account yet? That's alright! [Sign up now for free](https://www.metrilo.com/signup?ref=wpplugin) and get UNLIMITED 30-day free trial (forever-free plan also available)!
+This plugin provides one-click integration with Metrilo's Analytics & CRM tracking API for WordPress online stores running on WooCommerce. Funnels, metrics, individual visitors and customers tracking. Measure marketing channels efficiency, products and categories performance and many more. Ask-Us-Anything support included with every free or paid plan. We're truly customer centric and it's our mission to turn Metrilo into your best friend to run your eCommerce business with.
 
-Need an eCommerce CRM? Metrilo provides you with profile for each one of your customers and information how they landed on your online store, all of their history actions, products and categories they're interested in and so on. Manage your most valuable assets in a way that wasn't possible before. 
+Don't have Metrilo account yet? That's alright! [Sign up now for free](https://www.metrilo.com/signup?ref=wpplugin) and get UNLIMITED 14-day free trial.
+
+Need an eCommerce CRM? Metrilo provides you with profile for each one of your customers and information how they landed on your online store, all of their history actions, products and categories they're interested in and so on. Manage your most valuable asset in a way that wasn't possible before. 
 
 Metrilo gets better every single day. We're excited to have you onboard!
 

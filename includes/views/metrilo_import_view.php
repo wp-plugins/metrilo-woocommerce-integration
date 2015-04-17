@@ -3,7 +3,7 @@
 		<img src="https://www.metrilo.com/assets/invoice_logo.png" />
 	</div>
 	<div style="float: left;">
-	<h3>Importing your orders and customers to Metrilo (beta)</h3>
+	<h3>Importing your orders and customers to Metrilo</h3>
 	<p>
 		This tool syncs all your orders and customers to Metrilo and can take <strong>up to a few minutes</strong> to complete. <br />
 	  	Make sure you do not close this page while importing. Coffee, maybe?
@@ -55,5 +55,5 @@
 <br />
 </div>
 <div style="color: #888; font-size: 11px; padding: 5px;">
-	Please note that this importing tool is still in beta. If you encounter any issues, let us know at <a href="mailto:support@metrilo.com">support@metrilo.com</a>. We'll get it fixed. 
+	If you encounter any issues, let us know at <a href="mailto:support@metrilo.com">support@metrilo.com</a>. We'll be happy to assist you! 
 </div>
