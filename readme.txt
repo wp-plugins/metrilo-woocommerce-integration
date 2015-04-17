@@ -54,7 +54,7 @@ It really depends on how many visitors do you have per day. It's a good idea to 
 
 = Can I try or use it for free? =
 
-Absolutely! We offer a forever-free plan and we also provide 30-day free trial on every bigger plan. [Sign-up](https://www.metrilo.com/signup?ref=wpplugin) for Metrilo now and get to know your business and customers!
+Absolutely! We offer a forever-free plan and we also provide 14-day free trial on every bigger plan. [Sign-up](https://www.metrilo.com/signup?ref=wpplugin) for Metrilo now and get to know your business and customers!
 
 
 == Screenshots ==
@@ -64,6 +64,11 @@ Absolutely! We offer a forever-free plan and we also provide 30-day free trial o
 3. Products performance - see top performing products and how are they connected to other products in your catalog
 
 == Changelog ==
+
+
+= 1.0.2 =
+* Onboarding changes
+* Importing WooCommerce orders and customers to Metrilo is now out of beta.
 
 = 0.99 =
 * New: You can now import your historical orders and customers to Metrilo (still in beta)
