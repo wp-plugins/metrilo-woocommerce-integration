@@ -123,6 +123,9 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// hook on WooCommerce subscriptions renewal
 		add_action('woocommerce_subscriptions_renewal_order_created', array($this, 'new_subscription_order_event'), 10, 4);
 
+		// hook on WooCommerce order update
+		add_action('woocommerce_order_status_changed', array($this, 'order_status_changed'), 10);
+
 		// cookie clearing actions
 		add_action('wp_ajax_metrilo_clear', array($this, 'clear_cookie_events'));
 		add_action('wp_ajax_nopriv_metrilo_clear', array($this, 'clear_cookie_events'));
@@ -157,6 +160,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 					// prepare the order data
 					$purchase_params = array(
 						'order_id' 			=> $order_id, 
+						'order_type' 		=> 'import', 
+						'order_status' 		=> $order->get_status(), 
 						'amount' 			=> $order->get_total(), 
 						'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 						'tax_amount'		=> $order->get_total_tax(),
@@ -457,7 +462,9 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// prepare the order data
 		$purchase_params = array(
 			'order_id' 			=> $order_id, 
-			'amount' 			=> $order->get_total(), 
+			'order_type'		=> 'purchase',
+			'order_status'		=> $order->get_status(),
+			'amount' 			=> $order->get_total(),
 			'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 			'tax_amount'		=> $order->get_total_tax(),
 			'items' 			=> array(),
@@ -495,6 +502,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			$purchase_params = array(
 				'order_id' 			=> $order->id, 
 				'order_type'		=> 'renewal',
+				'order_status'		=> $order->get_status(),
 				'amount' 			=> $order->get_total(), 
 				'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 				'tax_amount'		=> $order->get_total_tax(),
@@ -525,6 +533,59 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		}
 
+	}
+
+	public function order_status_changed($order_id, $old_status = false, $new_status = false){
+		try {
+
+				$order = new WC_Order($order_id);
+
+				// prepare the order data
+				$purchase_params = array(
+					'order_id' 			=> $order_id, 
+					'order_status' 		=> $order->get_status(), 
+					'amount' 			=> $order->get_total(), 
+					'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
+					'tax_amount'		=> $order->get_total_tax(),
+					'items' 			=> array(),
+					'shipping_method'	=> $order->get_shipping_method(), 
+					'payment_method'	=> $order->payment_method_title
+				);
+
+				$order_time_in_ms = get_the_date('U', $order_id) * 1000;
+
+				$coupons_applied = $order->get_used_coupons();
+				if(count($coupons_applied) > 0){
+					$purchase_params['coupons'] = $coupons_applied;
+				}
+
+				// add the items data to the order
+				$order_items = $order->get_items();
+				foreach($order_items as $product){
+					$product_hash = array('id' => $product['product_id'], 'quantity' => $product['qty'], 'name' => $product['name']);
+					if(!empty($product['variation_id'])){
+						$variation_data = $this->prepare_variation_data($product['variation_id']);
+						$product_hash['option_id'] = $variation_data['id'];
+						$product_hash['option_price'] = $variation_data['price'];
+					}
+					array_push($purchase_params['items'], $product_hash);
+				}					
+				
+				$identity_data = array(
+							'email' 		=> get_post_meta($order->id, '_billing_email', true),
+							'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
+							'last_name' 	=> get_post_meta($order->id, '_billing_last_name', true),
+							'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
+				);
+
+				$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms);
+
+			
+
+
+		}catch(Exeption $e){
+
+		}
 	}
 
 	/**

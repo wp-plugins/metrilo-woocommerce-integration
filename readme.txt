@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: woocommerce, analytics, reporting, tracking, woo, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn, customer analytics, insights, ltv, email marketing, email, triggered emails, cohorts, sales analytics, customer intelligence, email marketing
 Requires at least: 2.9.2
 Tested up to: 4.1
-Stable Tag: 1.0.2
+Stable Tag: 1.0.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,7 +54,7 @@ It really depends on how many visitors do you have per day. It's a good idea to 
 
 = Can I try or use it for free? =
 
-Absolutely! We offer a forever-free plan and we also provide 14-day free trial on every bigger plan. [Sign-up](https://www.metrilo.com/signup?ref=wpplugin) for Metrilo now and get to know your business and customers!
+Absolutely! We offer a 14-day free trial on every plan. No obligation. No credit card required. [Get started for free](https://www.metrilo.com/signup?ref=wpplugin) now and get to know your WooCommerce customers!
 
 
 == Screenshots ==
@@ -65,6 +65,9 @@ Absolutely! We offer a forever-free plan and we also provide 14-day free trial o
 
 == Changelog ==
 
+
+= 1.0.3 =
+* This plugin now keeps your order statuses in sync between WooCommerce and Metrilo
 
 = 1.0.2 =
 * Onboarding changes
