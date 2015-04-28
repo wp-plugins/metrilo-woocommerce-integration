@@ -170,7 +170,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 						'payment_method'	=> $order->payment_method_title
 					);
 
-					$order_time_in_ms = get_the_date('U', $order_id) * 1000;
+					$order_time_in_ms = get_post_time('U', true, $order_id) * 1000;
 
 					$coupons_applied = $order->get_used_coupons();
 					if(count($coupons_applied) > 0){
@@ -552,7 +552,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 					'payment_method'	=> $order->payment_method_title
 				);
 
-				$order_time_in_ms = get_the_date('U', $order_id) * 1000;
+				$order_time_in_ms = get_post_time('U', true, $order_id) * 1000;
 
 				$coupons_applied = $order->get_used_coupons();
 				if(count($coupons_applied) > 0){
