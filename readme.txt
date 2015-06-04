@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: woocommerce, analytics, reporting, tracking, woo, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn, customer analytics, insights, ltv, email marketing, email, triggered emails, cohorts, sales analytics, customer intelligence, email marketing
 Requires at least: 2.9.2
 Tested up to: 4.2
-Stable Tag: 1.1.0
+Stable Tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,9 @@ Absolutely! We offer a 14-day free trial on every plan. No obligation. No credit
 
 == Changelog ==
 
+
+= 1.1.2 =
+* Improved: Send customer order location to Metrilo when syncing orders
 
 = 1.1.0 =
 * Fixed: issue with non-GMT WooCommerce installations. Thank you for reporting it, Kevin and Gregg!

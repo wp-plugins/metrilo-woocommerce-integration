@@ -169,6 +169,13 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 						'shipping_method'	=> $order->get_shipping_method(), 
 						'payment_method'	=> $order->payment_method_title
 					);
+					$call_params = false;
+
+					// check if order has customer IP in it
+					$customer_ip = $this->get_order_ip($order_id);
+					if($customer_ip){
+						$call_params = array('use_ip' => $customer_ip);
+					}
 
 					$order_time_in_ms = get_post_time('U', true, $order_id) * 1000;
 
@@ -196,7 +203,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 								'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
 					);
 
-					$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms);
+					$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms, $call_params);
 
 				}
 			}
@@ -351,15 +358,15 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		return array('method' => $method, 'event' => $event, 'params' => $params);
 	}
 
-	public function send_api_call($ident, $event, $params, $identity_data = false, $time = false){
+	public function send_api_call($ident, $event, $params, $identity_data = false, $time = false, $call_params = false){
 
 		if(!empty($this->api_key) && !empty($this->api_secret)){
-			$this->prepare_secret_call_hash($ident, $event, $params, $identity_data, $time);
+			$this->prepare_secret_call_hash($ident, $event, $params, $identity_data, $time, $call_params);
 		}
 
 	}
 
-	private function prepare_secret_call_hash($ident, $event, $params, $identity_data = false, $time = false){
+	private function prepare_secret_call_hash($ident, $event, $params, $identity_data = false, $time = false, $call_params = false){
 
 		// prepare API call params
 
@@ -373,6 +380,13 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			);
 			if($time){
 				$call['time'] = $time;
+			}
+
+			// check for special parameters to include in the API call
+			if($call_params){
+				if($call_params['use_ip']){
+					$call['use_ip'] = $call_params['use_ip'];
+				}
 			}
 
 
@@ -551,6 +565,13 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 					'shipping_method'	=> $order->get_shipping_method(), 
 					'payment_method'	=> $order->payment_method_title
 				);
+				$call_params = false;
+
+				// check if order has customer IP in it
+				$customer_ip = $this->get_order_ip($order_id);
+				if($customer_ip){
+					$call_params = array('use_ip' => $customer_ip);
+				}
 
 				$order_time_in_ms = get_post_time('U', true, $order_id) * 1000;
 
@@ -578,7 +599,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 							'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
 				);
 
-				$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms);
+				$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms, $call_params);
 
 			
 
@@ -660,6 +681,14 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	public function clear_items_in_cookie(){
 		$this->session_set($this->get_cookie_name(), json_encode(array(), true));
 		$this->session_set($this->get_do_identify_cookie_name(), json_encode(array(), true));
+	}
+
+	public function get_order_ip($order_id){
+		$ip_address = get_post_meta($order_id, '_customer_ip_address', true);
+		if(strpos($ip_address, '.') !== false){
+			return $ip_address;
+		}
+		return false;
 	}
 
 	private function get_cookie_name(){
