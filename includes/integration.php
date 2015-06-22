@@ -38,6 +38,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		// Fetch the integration settings
 		$this->api_key = $this->get_option('api_key', false);
 		$this->api_secret = $this->get_option('api_secret', false);
+		$this->ignore_for_roles = $this->get_option('ignore_for_roles', false);
+		$this->accept_tracking = true;
 
 		// previous version compatibility - fetch token from Wordpress settings
 		if(empty($this->api_key)){
@@ -513,9 +515,12 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		try {
 
+
+
 			$purchase_params = array(
 				'order_id' 			=> $order->id, 
 				'order_type'		=> 'renewal',
+				'meta_source'		=> '_renewal',
 				'order_status'		=> $order->get_status(),
 				'amount' 			=> $order->get_total(), 
 				'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
@@ -627,8 +632,21 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 	public function render_snippet(){
+		// check if we should track data for this user (if user is available)
+		if( !is_admin() && is_user_logged_in()){
+			$user = wp_get_current_user();
+			if($user->roles && $this->ignore_for_roles){
+				foreach($user->roles as $r){
+					if(in_array($r, $this->ignore_for_roles)){
+						$this->accept_tracking = false;
+					}
+				}
+			}
+		}
+
+		// render the JS tracking code
 		include_once(METRILO_PLUGIN_PATH.'/js.php');
-		// this is where we're going to place the tracking code if we need to send something
+		
 	} 
 
 
@@ -743,6 +761,18 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	 * Initialize integration settings form fields.
 	 */
 	public function init_form_fields() {
+
+		// initiate possible user roles from settings
+		$possible_ignore_roles = false;
+		
+		if(is_admin()){
+			global $wp_roles;
+			$possible_ignore_roles = array();
+			foreach($wp_roles->roles as $role => $stuff){
+				$possible_ignore_roles[$role] = $stuff['name'];
+			}
+		}
+
 		$this->form_fields = array(
 			'api_key' => array(
 				'title'             => __( 'API Token', 'metrilo-woo-analytics' ),
@@ -759,6 +789,17 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				'default'           => ''
 			)
 		);
+
+		if($possible_ignore_roles){
+			$this->form_fields['ignore_for_roles'] = array(
+				'title'             => __( 'Ignore tracking for roles', 'metrilo-woo-analytics' ),
+				'type'              => 'multiselect',
+				'description'       => __( 'If you check any of the roles, tracking data will be ignored for WP users with this role', 'metrilo-woo-analytics' ),
+				'desc_tip'          => false,
+				'default'           => '', 
+				'options'			=> $possible_ignore_roles
+			);
+		}
 	}
  
 }
