@@ -163,7 +163,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 					$purchase_params = array(
 						'order_id' 			=> $order_id, 
 						'order_type' 		=> 'import', 
-						'order_status' 		=> $order->get_status(), 
+						'order_status' 		=> $this->get_order_status($order), 
 						'amount' 			=> $order->get_total(), 
 						'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 						'tax_amount'		=> $order->get_total_tax(),
@@ -479,7 +479,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		$purchase_params = array(
 			'order_id' 			=> $order_id, 
 			'order_type'		=> 'purchase',
-			'order_status'		=> $order->get_status(),
+			'order_status'		=> $this->get_order_status($order),
 			'amount' 			=> $order->get_total(),
 			'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 			'tax_amount'		=> $order->get_total_tax(),
@@ -521,7 +521,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				'order_id' 			=> $order->id, 
 				'order_type'		=> 'renewal',
 				'meta_source'		=> '_renewal',
-				'order_status'		=> $order->get_status(),
+				'order_status'		=> $this->get_order_status($order),
 				'amount' 			=> $order->get_total(), 
 				'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 				'tax_amount'		=> $order->get_total_tax(),
@@ -562,7 +562,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				// prepare the order data
 				$purchase_params = array(
 					'order_id' 			=> $order_id, 
-					'order_status' 		=> $order->get_status(), 
+					'order_status' 		=> $this->get_order_status($order), 
 					'amount' 			=> $order->get_total(), 
 					'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 					'tax_amount'		=> $order->get_total_tax(),
@@ -611,6 +611,16 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		}catch(Exeption $e){
 
+		}
+	}
+
+	public function get_order_status($order_object){
+		if(method_exists($order_object, 'get_status')){
+			return $order_object->get_status();
+		}else{
+			if(property_exists($order_object, 'status')){
+				return $order_object->status;
+			}
 		}
 	}
 
