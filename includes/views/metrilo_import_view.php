@@ -5,8 +5,9 @@
 	<div style="float: left;">
 	<h3>Importing your orders and customers to Metrilo</h3>
 	<p>
-		This tool syncs all your orders and customers to Metrilo and can take <strong>up to a few minutes</strong> to complete. <br />
-	  	Make sure you do not close this page while importing. Coffee, maybe?
+		This tool helps you sync all your orders and customers to Metrilo and can take <strong>up to 20 minutes</strong> to complete. <br />
+		It will not affect your website's performance at all since it sends your orders to your Metrilo account in small chunks.  <br /><br />
+	  	Make sure to <strong>not close this page</strong> while importing. Coffee, maybe?
 	</p>
 	<?php if($this->importing): ?>
 		<script type="text/javascript">
@@ -20,7 +21,7 @@
 			}
 			var sync_chunk = function(chunk_id){
 				progress_percents = Math.round(chunk_id * chunk_percentage);
-				update_importing_message('Importing... '+progress_percents+'% done');
+				update_importing_message('Please wait... '+progress_percents+'% done');
 
 				var order_ids = metrilo_chunks[chunk_id];
 				$.post("<?php echo admin_url('admin-ajax.php'); ?>", {'action': 'metrilo_chunk_sync', 'orders': order_ids}, function(response) {
@@ -29,7 +30,7 @@
 					if(metrilo_chunks[new_chunk_id] != undefined){
 						setTimeout(function(){
 							sync_chunk(new_chunk_id);
-						}, 2000);
+						}, 900);
 					}else{
 						update_importing_message("<span style='color: green;'>Done! Please expect up to 30 minutes for your historical data to appear in Metrilo.</span>");
 					}
@@ -46,7 +47,7 @@
 
 		});
 		</script>
-		<strong id="metrilo_import_status">Importing...</strong>
+		<strong id="metrilo_import_status">Syncing...</strong>
 	<?php else: ?>
 		<a href="<?php echo admin_url('tools.php?page=metrilo-import&import=1') ?>" class="button"><strong>Sync <?php echo $this->orders_total; ?> orders now</strong></a>
 	<?php endif; ?>

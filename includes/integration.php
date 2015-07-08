@@ -156,56 +156,62 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		$order_ids = $_REQUEST['orders'];
 		if(!empty($order_ids)){
 			foreach($order_ids as $order_id){
-				$order = new WC_Order($order_id);
-				if(!empty($order) && !empty($order->id)){
 
-					// prepare the order data
-					$purchase_params = array(
-						'order_id' 			=> $order_id, 
-						'order_type' 		=> 'import', 
-						'order_status' 		=> $this->get_order_status($order), 
-						'amount' 			=> $order->get_total(), 
-						'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
-						'tax_amount'		=> $order->get_total_tax(),
-						'items' 			=> array(),
-						'shipping_method'	=> $order->get_shipping_method(), 
-						'payment_method'	=> $order->payment_method_title
-					);
-					$call_params = false;
+				try {
+					$order = new WC_Order($order_id);
+					if(!empty($order) && !empty($order->id)){
 
-					// check if order has customer IP in it
-					$customer_ip = $this->get_order_ip($order_id);
-					if($customer_ip){
-						$call_params = array('use_ip' => $customer_ip);
-					}
+						// prepare the order data
+						$purchase_params = array(
+							'order_id' 			=> $order_id, 
+							'order_type' 		=> 'import', 
+							'order_status' 		=> $this->get_order_status($order), 
+							'amount' 			=> $order->get_total(), 
+							'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
+							'tax_amount'		=> $order->get_total_tax(),
+							'items' 			=> array(),
+							'shipping_method'	=> $order->get_shipping_method(), 
+							'payment_method'	=> $order->payment_method_title
+						);
+						$call_params = false;
 
-					$order_time_in_ms = get_post_time('U', true, $order_id) * 1000;
-
-					$coupons_applied = $order->get_used_coupons();
-					if(count($coupons_applied) > 0){
-						$purchase_params['coupons'] = $coupons_applied;
-					}
-
-					// add the items data to the order
-					$order_items = $order->get_items();
-					foreach($order_items as $product){
-						$product_hash = array('id' => $product['product_id'], 'quantity' => $product['qty'], 'name' => $product['name']);
-						if(!empty($product['variation_id'])){
-							$variation_data = $this->prepare_variation_data($product['variation_id']);
-							$product_hash['option_id'] = $variation_data['id'];
-							$product_hash['option_price'] = $variation_data['price'];
+						// check if order has customer IP in it
+						$customer_ip = $this->get_order_ip($order_id);
+						if($customer_ip){
+							$call_params = array('use_ip' => $customer_ip);
 						}
-						array_push($purchase_params['items'], $product_hash);
-					}					
-					
-					$identity_data = array(
-								'email' 		=> get_post_meta($order->id, '_billing_email', true),
-								'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
-								'last_name' 	=> get_post_meta($order->id, '_billing_last_name', true),
-								'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
-					);
 
-					$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms, $call_params);
+						$order_time_in_ms = get_post_time('U', true, $order_id) * 1000;
+
+						$coupons_applied = $order->get_used_coupons();
+						if(count($coupons_applied) > 0){
+							$purchase_params['coupons'] = $coupons_applied;
+						}
+
+						// add the items data to the order
+						$order_items = $order->get_items();
+						foreach($order_items as $product){
+							$product_hash = array('id' => $product['product_id'], 'quantity' => $product['qty'], 'name' => $product['name']);
+							if(!empty($product['variation_id'])){
+								$variation_data = $this->prepare_variation_data($product['variation_id']);
+								$product_hash['option_id'] = $variation_data['id'];
+								$product_hash['option_price'] = $variation_data['price'];
+							}
+							array_push($purchase_params['items'], $product_hash);
+						}					
+						
+						$identity_data = array(
+									'email' 		=> get_post_meta($order->id, '_billing_email', true),
+									'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
+									'last_name' 	=> get_post_meta($order->id, '_billing_last_name', true),
+									'name'			=> get_post_meta($order->id, '_billing_first_name', true) . ' ' . get_post_meta($order->id, '_billing_last_name', true),
+						);
+
+						$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms, $call_params);
+
+					}
+
+				}catch(Exception $e){
 
 				}
 			}
@@ -405,7 +411,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 			// generate API call end point and call it
 			$end_point = 'http://p.metrilo.com/t?s='.$signature.'&hs='.$based_call;
-			$c = wp_remote_get($end_point);
+			$c = wp_remote_get($end_point, array( 'timeout' => 10 ));
 
 		} catch (Exception $e){
 

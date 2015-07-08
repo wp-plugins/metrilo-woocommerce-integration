@@ -40,7 +40,7 @@ class Metrilo_Import {
 				$chunks[$current_chunk] = array();
 			}
 			$chunks[$current_chunk][] = $order_id;
-			if(count($chunks[$current_chunk]) >= 10){
+			if(count($chunks[$current_chunk]) >= 15){
 				$current_chunk++;
 			}
 		}
