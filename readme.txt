@@ -3,7 +3,7 @@ Contributors: MurryIvanoff
 Tags: woocommerce, analytics, reporting, tracking, woo, ecommerce, funnels, metrics, kissmetrics, mixpanel, crm, history, products, items, rjmetrics, analytics dashboard, google analytics, products, retention, coupons, customers, big data, customer relationship management, subscriptions, woocommerce subscriptions, churn, customer analytics, insights, ltv, email marketing, email, triggered emails, cohorts, sales analytics, customer intelligence, email marketing
 Requires at least: 2.9.2
 Tested up to: 4.2
-Stable Tag: 1.1.8
+Stable Tag: 1.1.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,7 +28,7 @@ This plugin provides one-click integration with Metrilo's Analytics & CRM tracki
 
 Don't have Metrilo account yet? That's alright! [Sign up now for free](https://www.metrilo.com/signup?ref=wpplugin) and get UNLIMITED 14-day free trial.
 
-Need an eCommerce CRM? Metrilo provides you with profile for each one of your customers and information how they landed on your online store, all of their history actions, products and categories they're interested in and so on. Manage your most valuable asset in a way that wasn't possible before. 
+Need an eCommerce CRM? Metrilo provides you with profile for each one of your customers and information how they landed on your online store, all of their history actions, products and categories they're interested in and so on. Manage your most valuable asset in a way that wasn't possible before.
 
 Metrilo gets better every single day. We're excited to have you onboard!
 
@@ -50,7 +50,7 @@ Absolutely no. Metrilo's tracking library loads async and doesn't slow down your
 
 = How long should I wait before I have enough data to trust and act on? =
 
-It really depends on how many visitors do you have per day. It's a good idea to wait at least a few days. 
+It really depends on how many visitors do you have per day. It's a good idea to wait at least a few days.
 
 = Can I try or use it for free? =
 
@@ -65,6 +65,9 @@ Absolutely! We offer a 14-day free trial on every plan. No obligation. No credit
 
 == Changelog ==
 
+
+= 1.1.9 =
+* Optimized: Syncing orders to Metrilo
 
 = 1.1.8 =
 * Improved: Syncing orders to Metrilo now takes less time
@@ -113,7 +116,7 @@ Absolutely! We offer a 14-day free trial on every plan. No obligation. No credit
 * Bug fixes
 
 = 0.81 =
-* Backwards compitability with 2.0x versions. Stability improvements. 
+* Backwards compitability with 2.0x versions. Stability improvements.
 
 = 0.71 =
 * Metrilo now works as WooCommerce integration. Improved session management using WooCommerce's Session Handler.

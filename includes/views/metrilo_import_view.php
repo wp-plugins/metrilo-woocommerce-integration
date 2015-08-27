@@ -5,31 +5,29 @@
 	<div style="float: left;">
 	<h3>Importing your orders and customers to Metrilo</h3>
 	<p>
-		This tool helps you sync all your orders and customers to Metrilo and can take <strong>up to 20 minutes</strong> to complete. <br />
+		This tool helps you sync all your orders (and their respective customers) to Metrilo and can take <strong>up to 20 minutes</strong> to complete. <br />
 		It will not affect your website's performance at all since it sends your orders to your Metrilo account in small chunks.  <br /><br />
 	  	Make sure to <strong>not close this page</strong> while importing. Coffee, maybe?
 	</p>
 	<?php if($this->importing): ?>
 		<script type="text/javascript">
 		jQuery(document).ready(function($){
-			
-			var metrilo_chunks = <?php echo json_encode($this->chunks); ?>;
-			var total_chunks = <?php echo count($this->chunks); ?>;
+
+			var chunk_pages = <?php echo $this->chunk_pages; ?>;
 			var chunk_percentage = 100;
-			if(total_chunks > 0){
-				var chunk_percentage = (100 / total_chunks);
+			if(chunk_pages > 0){
+				var chunk_percentage = (100 / chunk_pages);
 			}
-			var sync_chunk = function(chunk_id){
-				progress_percents = Math.round(chunk_id * chunk_percentage);
+			var sync_chunk = function(chunk_page){
+				progress_percents = Math.round(chunk_page * chunk_percentage);
 				update_importing_message('Please wait... '+progress_percents+'% done');
 
-				var order_ids = metrilo_chunks[chunk_id];
-				$.post("<?php echo admin_url('admin-ajax.php'); ?>", {'action': 'metrilo_chunk_sync', 'orders': order_ids}, function(response) {
+				$.post("<?php echo admin_url('admin-ajax.php'); ?>", {'action': 'metrilo_chunk_sync', 'chunk_page': chunk_page}, function(response) {
 
-					new_chunk_id = chunk_id + 1;
-					if(metrilo_chunks[new_chunk_id] != undefined){
+					new_chunk_page = chunk_page + 1;
+					if(new_chunk_page <= chunk_pages){
 						setTimeout(function(){
-							sync_chunk(new_chunk_id);
+							sync_chunk(new_chunk_page);
 						}, 900);
 					}else{
 						update_importing_message("<span style='color: green;'>Done! Please expect up to 30 minutes for your historical data to appear in Metrilo.</span>");
@@ -56,5 +54,5 @@
 <br />
 </div>
 <div style="color: #888; font-size: 11px; padding: 5px;">
-	If you encounter any issues, let us know at <a href="mailto:support@metrilo.com">support@metrilo.com</a>. We'll be happy to assist you! 
+	If you encounter any issues, let us know at <a href="mailto:support@metrilo.com">support@metrilo.com</a>. We'll be happy to assist you!
 </div>

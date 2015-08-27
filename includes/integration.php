@@ -1,6 +1,6 @@
 <?php
 
- 
+
 if ( ! class_exists( 'Metrilo_Woo_Analytics_Integration' ) ) :
 
 class Metrilo_Woo_Analytics_Integration extends WC_Integration {
@@ -11,14 +11,15 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	private $has_events_in_cookie = false;
 	private $identify_call_data = false;
 	private $woo = false;
+	private $orders_per_import_chunk = 10;
 
- 
+
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * Initialization and hooks
-	 * 
-	 * 
+	 *
+	 *
 	 */
 
 	public function __construct() {
@@ -29,12 +30,12 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		$this->id = 'metrilo-woo-analytics';
 		$this->method_title = __( 'Metrilo', 'metrilo-woo-analytics' );
 		$this->method_description = __( 'Metrilo offers powerful yet simple CRM & Analytics for WooCommerce and WooCommerce Subscription Stores. Enter your API key to activate analytics tracking.', 'metrilo-woo-analytics' );
- 
+
 
 		// Load the settings.
 		$this->init_form_fields();
 		$this->init_settings();
- 
+
 		// Fetch the integration settings
 		$this->api_key = $this->get_option('api_key', false);
 		$this->api_secret = $this->get_option('api_secret', false);
@@ -54,10 +55,10 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		// initiate woocommerce hooks and activities
 		add_action('woocommerce_init', array($this, 'on_woocommerce_init'));
- 
+
 		// hook to integration settings update
 		add_action( 'woocommerce_update_options_integration_' .  $this->id, array($this, 'process_admin_options'));
- 
+
 	}
 
 	public function ensure_uid(){
@@ -147,13 +148,22 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		$metrilo_import->prepare_import();
 		if(!empty($_GET['import'])){
 			$metrilo_import->set_importing_mode(true);
-			$metrilo_import->prepare_order_chunks();
+			$metrilo_import->prepare_order_chunks($this->orders_per_import_chunk);
 		}
 		$metrilo_import->output();
 	}
 
 	public function sync_orders_chunk(){
-		$order_ids = $_REQUEST['orders'];
+		global $wpdb;
+
+		$order_ids = false;
+		if(isset($_REQUEST['chunk_page'])){
+			$chunk_page = (int)$_REQUEST['chunk_page'];
+			$chunk_offset = $chunk_page * $this->orders_per_import_chunk;
+
+			// fetch order IDs
+			$order_ids = $wpdb->get_col("select id from {$wpdb->posts} where post_type = 'shop_order' order by id asc limit {$this->orders_per_import_chunk} offset {$chunk_offset}");
+		}
 		if(!empty($order_ids)){
 			foreach($order_ids as $order_id){
 
@@ -163,14 +173,14 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 						// prepare the order data
 						$purchase_params = array(
-							'order_id' 			=> $order_id, 
-							'order_type' 		=> 'import', 
-							'order_status' 		=> $this->get_order_status($order), 
-							'amount' 			=> $order->get_total(), 
+							'order_id' 			=> $order_id,
+							'order_type' 		=> 'import',
+							'order_status' 		=> $this->get_order_status($order),
+							'amount' 			=> $order->get_total(),
 							'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 							'tax_amount'		=> $order->get_total_tax(),
 							'items' 			=> array(),
-							'shipping_method'	=> $order->get_shipping_method(), 
+							'shipping_method'	=> $order->get_shipping_method(),
 							'payment_method'	=> $order->payment_method_title
 						);
 						$call_params = false;
@@ -198,8 +208,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 								$product_hash['option_price'] = $variation_data['price'];
 							}
 							array_push($purchase_params['items'], $product_hash);
-						}					
-						
+						}
+
 						$identity_data = array(
 									'email' 		=> get_post_meta($order->id, '_billing_email', true),
 									'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
@@ -236,15 +246,15 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			$this->session_set($this->get_identify_cookie_name(), 'true');
 		}
 
-	}	
+	}
 
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * Events tracking methods, event hooks
-	 * 
-	 * 
+	 *
+	 *
 	 */
 
 
@@ -316,7 +326,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 	public function prepare_product_hash($product, $variation_id = false, $variation = false){
 		$product_hash = array(
-			'id'			=> $product->id, 
+			'id'			=> $product->id,
 			'name'			=> $product->get_title(),
 			'price'			=> $product->get_price(),
 			'url'			=> get_permalink($product->id)
@@ -342,13 +352,13 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			if(!empty($categories_list)) $product_hash['categories'] = $categories_list;
 		}
 
-		// return 
+		// return
 		return $product_hash;
 	}
 
 	public function prepare_category_hash($category){
 		$category_hash = array(
-			'id'	=>	$category->term_id, 
+			'id'	=>	$category->term_id,
 			'name'	=> 	$category->name
 		);
 		return $category_hash;
@@ -381,9 +391,9 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		try {
 
 			$call = array(
-				'event_type'		=> $event, 
-				'params'			=> $params, 
-				'uid'				=> $ident, 
+				'event_type'		=> $event,
+				'params'			=> $params,
+				'uid'				=> $ident,
 				'token'				=> $this->api_key
 			);
 			if($time){
@@ -410,8 +420,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 			$signature = md5($based_call.$this->api_secret);
 
 			// generate API call end point and call it
-			$end_point = 'http://p.metrilo.com/t?s='.$signature.'&hs='.$based_call;
-			$c = wp_remote_get($end_point, array( 'timeout' => 10 ));
+			$end_point_params = array('s' => $signature, 'hs' => $based_call);
+			$c = wp_remote_post('http://p.metrilo.com/t', array( 'body' => $end_point_params, 'timeout' => 10 ));
 
 		} catch (Exception $e){
 
@@ -428,7 +438,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	public function remove_from_cart($key_id){
 		if (!is_object($this->woo->cart)) {
 			return true;
-		}		
+		}
 		$cart_items = $this->woo->cart->get_cart();
 		$removed_cart_item = isset($cart_items[$key_id]) ? $cart_items[$key_id] : false;
 		if($removed_cart_item){
@@ -462,7 +472,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 	public function applied_coupon($coupon_code){
-		$this->put_event_in_queue('track', 'applied_coupon', $coupon_code);	
+		$this->put_event_in_queue('track', 'applied_coupon', $coupon_code);
 	}
 
 	public function new_order_event($order_id){
@@ -483,14 +493,14 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		// prepare the order data
 		$purchase_params = array(
-			'order_id' 			=> $order_id, 
+			'order_id' 			=> $order_id,
 			'order_type'		=> 'purchase',
 			'order_status'		=> $this->get_order_status($order),
 			'amount' 			=> $order->get_total(),
 			'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 			'tax_amount'		=> $order->get_total_tax(),
 			'items' 			=> array(),
-			'shipping_method'	=> $order->get_shipping_method(), 
+			'shipping_method'	=> $order->get_shipping_method(),
 			'payment_method'	=> $order->payment_method_title
 		);
 
@@ -524,15 +534,15 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 
 			$purchase_params = array(
-				'order_id' 			=> $order->id, 
+				'order_id' 			=> $order->id,
 				'order_type'		=> 'renewal',
 				'meta_source'		=> '_renewal',
 				'order_status'		=> $this->get_order_status($order),
-				'amount' 			=> $order->get_total(), 
+				'amount' 			=> $order->get_total(),
 				'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 				'tax_amount'		=> $order->get_total_tax(),
 				'items' 			=> array(),
-				'shipping_method'	=> $order->get_shipping_method(), 
+				'shipping_method'	=> $order->get_shipping_method(),
 				'payment_method'	=> $order->payment_method_title
 			);
 
@@ -567,13 +577,13 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 				// prepare the order data
 				$purchase_params = array(
-					'order_id' 			=> $order_id, 
-					'order_status' 		=> $this->get_order_status($order), 
-					'amount' 			=> $order->get_total(), 
+					'order_id' 			=> $order_id,
+					'order_status' 		=> $this->get_order_status($order),
+					'amount' 			=> $order->get_total(),
 					'shipping_amount' 	=> method_exists($order, 'get_total_shipping') ? $order->get_total_shipping() : $order->get_shipping(),
 					'tax_amount'		=> $order->get_total_tax(),
 					'items' 			=> array(),
-					'shipping_method'	=> $order->get_shipping_method(), 
+					'shipping_method'	=> $order->get_shipping_method(),
 					'payment_method'	=> $order->payment_method_title
 				);
 				$call_params = false;
@@ -601,8 +611,8 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 						$product_hash['option_price'] = $variation_data['price'];
 					}
 					array_push($purchase_params['items'], $product_hash);
-				}					
-				
+				}
+
 				$identity_data = array(
 							'email' 		=> get_post_meta($order->id, '_billing_email', true),
 							'first_name' 	=> get_post_meta($order->id, '_billing_first_name', true),
@@ -612,7 +622,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 				$this->send_api_call($identity_data['email'], 'order', $purchase_params, $identity_data, $order_time_in_ms, $call_params);
 
-			
+
 
 
 		}catch(Exeption $e){
@@ -631,11 +641,11 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * Tracking code rendering
-	 * 
-	 * 
+	 *
+	 *
 	 */
 
 
@@ -662,16 +672,16 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		// render the JS tracking code
 		include_once(METRILO_PLUGIN_PATH.'/js.php');
-		
-	} 
+
+	}
 
 
 	/**
-	 * 
-	 * 
+	 *
+	 *
 	 * Session and cookie handling
-	 * 
-	 * 
+	 *
+	 *
 	 */
 
 	public function session_get($k){
@@ -758,7 +768,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 	}
 
 
-	/** 
+	/**
 	 * Settings compatibility with previous versin - fetch api key from WP options pool
 	 */
 
@@ -772,7 +782,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 		}
 		return $api_key;
 	}
- 
+
 	/**
 	 * Initialize integration settings form fields.
 	 */
@@ -780,7 +790,7 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 
 		// initiate possible user roles from settings
 		$possible_ignore_roles = false;
-		
+
 		if(is_admin()){
 			global $wp_roles;
 			$possible_ignore_roles = array();
@@ -812,12 +822,12 @@ class Metrilo_Woo_Analytics_Integration extends WC_Integration {
 				'type'              => 'multiselect',
 				'description'       => __( 'If you check any of the roles, tracking data will be ignored for WP users with this role', 'metrilo-woo-analytics' ),
 				'desc_tip'          => false,
-				'default'           => '', 
+				'default'           => '',
 				'options'			=> $possible_ignore_roles
 			);
 		}
 	}
- 
+
 }
 
 
